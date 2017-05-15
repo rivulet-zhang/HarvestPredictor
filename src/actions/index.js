@@ -21,4 +21,5 @@ export function predict(vineyard, hisYear, curYear, startDateCurYear) {
 }
 
 function predictAlgo(){
+  console.log('placeholder');
 }
