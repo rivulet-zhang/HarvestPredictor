@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import ControlPanel from '../containers/control_panel';
 import Chart from '../components/chart';
+import Result from '../components/result';
 
 export default class Root extends Component {
   render() {
@@ -12,6 +13,7 @@ export default class Root extends Component {
           Please input parameters in the control panel to get started.
         </div>
         <ControlPanel />
+        <Result />
         <Chart />
       </div>
     )

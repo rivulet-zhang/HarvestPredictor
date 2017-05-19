@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { DropdownList, DateTimePicker } from 'react-widgets';
-import { predict } from '../actions/index';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { predict } from '../actions'
 import moment from 'moment';
 import DatePicker from 'react-datepicker';
 
-const VINEYARDS = ['bigRanch', 'tresSabores'];
+// const VINEYARDS = ['bigRanch', 'tresSabores'];
+const VINEYARDS = ['bigRanch'];
 const YEARS = ["2014", "2015", "2016", "2017"];
 
 class ControlPanel extends Component {
@@ -29,11 +30,9 @@ class ControlPanel extends Component {
 
   render() {
 
-    console.log(this.state);
-
     return (
       <div>
-        <h3>Control Panel</h3>
+        <h3>Control panel</h3>
         <div>
           <div>Select vineyard:</div>
           <DropdownList
@@ -62,7 +61,7 @@ class ControlPanel extends Component {
         </div>
 
         <div>
-          <div>Select start date for current year:</div>
+          <div>Select start date (bud break) for current year:</div>
           <DatePicker
             style={{height:'30px', width:'80px'}}
             selected={ this.state.startDateCurYear }
@@ -74,9 +73,6 @@ class ControlPanel extends Component {
             Submit
           </button>
         </div>
-        <div>
-          Prediction result: {this.props.preDate}
-        </div>
       </div>
     )
   }
@@ -84,10 +80,6 @@ class ControlPanel extends Component {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({predict}, dispatch);
-}
-
-function mapStatetoProps(state) {
-  return {preDate:state.preDate};
 }
 
 export default connect(null, mapDispatchToProps)(ControlPanel);

@@ -1,10 +1,14 @@
 import { combineReducers } from 'redux';
-import preDateReducer from './preDateReducer';
 import vineyardDataReducer from './vineyardDataReducer';
+import preParamReducer from './preParamReducer';
+import seasonReducer from './seasonReducer';
 
 const rootReducer = combineReducers({
-  preDate: preDateReducer,
-  vineyardData: vineyardDataReducer
+  // initial data loading for prediction
+  vineyardData: vineyardDataReducer,
+  season: seasonReducer,
+  // prediction parameters set in UI
+  preParam: preParamReducer
 });
 
 export default rootReducer;

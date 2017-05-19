@@ -1,25 +1,34 @@
 import { csv as requestCsv } from 'd3-request';
 
-export function predict(vineyard, hisYear, curYear, startDateCurYear) {
+const PREDICTION_URL = `http://voxel.ecn.purdue.edu/weathertrends/temp_summary.csv`;
 
-  if(!vineyard)
-    return {type:'CANCEL'};
+// hardcoded value for now
+const vineyard = 'bigRanch';
+
+export function loadInitialData() {
 
   return dispatch => {
+
     requestCsv('../data/seasonInfo.csv', (error, data) => {
       if(error) throw error;
-
       const season = data.filter( record => { return record.vineyard == vineyard;} );
-
-      requestCsv(`../data/${vineyard}_weather.csv`, (error, data) => {
-        dispatch({ type:'PREDICTION', payload:{season, data} })
-      });
-
+      dispatch({ type:'DATA_SEASON', payload:season });
     });
-  };
 
+    requestCsv(`../data/${vineyard}_weather.csv`, (error, data) => {
+      if(error) throw error;
+      dispatch({ type:'DATA_VINEYARD_PREV', payload:data });
+    });
+
+    requestCsv(PREDICTION_URL, (error, data) => {
+      if(error) throw error;
+      dispatch({ type:'DATA_VINEYARD_CUR', payload:data });
+    });
+
+  };
 }
 
-function predictAlgo(){
-  console.log('placeholder');
+
+export function predict(vineyard, hisYear, curYear, startDateCurYear) {
+  return {type:'PREDICT', payload:{vineyard, hisYear, curYear, startDateCurYear}};
 }

@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import vineyardDataSelector from '../selectors/vineyardDataSelector';
 
 class LineChart extends Component {
   render() {
 
-    if(!this.props.vineyard)
+    if(!this.props.time_series)
       return <div><h3>Temperature Chart</h3></div>
 
     return (
@@ -17,7 +18,7 @@ class LineChart extends Component {
 
 function mapStateToProps(state) {
   return {
-    vineyard: state.selectedVineyard
+    time_series: vineyardDataSelector(state)
   }
 }
 
