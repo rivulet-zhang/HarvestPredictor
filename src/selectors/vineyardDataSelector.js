@@ -15,12 +15,14 @@ const time_series = (vineyardData, preParam) => {
   const year1 = _.chain(data).filter(value => { return value.time.split("-")[0] === preParam.hisYear; }).sortBy('time').value();
   const year2 = _.chain(data).filter(value => { return value.time.split("-")[0] === preParam.curYear; }).sortBy('time').value();
 
-  const output = {};
-
-  output[preParam.hisYear] = year1;
-  output[preParam.curYear] = year2;
-
-  console.log("output", output);
+  const output = [];
+  for(let i=0; i<_.min([year1.length, year2.length]); i++){
+    const item = {};
+    item['time'] = year1[i].time.substring(5);
+    item[preParam.hisYear] = year1[i].temp;
+    item[preParam.curYear] = year2[i].temp;
+    output.push(item);
+  }
   return output;
 };
 
