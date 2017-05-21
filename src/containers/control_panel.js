@@ -15,24 +15,28 @@ class ControlPanel extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      vineyard:'',
-      hisYear:'2016',
-      curYear:'2017',
-      startDateCurYear:''
+      vineyard:null,
+      hisYear:null,
+      curYear:null,
+      startDateCurYear:null
     };
 
     this.predictWrapper = this.predictWrapper.bind(this);
   }
 
   predictWrapper() {
-    this.props.predict(this.state.vineyard, this.state.hisYear, this.state.curYear, this.state.startDateCurYear);
+
+    if(!this.state.vineyard || !this.state.hisYear || !this.state.curYear || !this.state.startDateCurYear)
+      return;
+
+    this.props.predict(this.state.vineyard, this.state.hisYear, this.state.curYear, this.state.startDateCurYear.format('YYYY-MM-DD'));
   }
 
   render() {
 
     return (
       <div>
-        <h3>Control panel</h3>
+        <h3>Control Panel</h3>
         <div>
           <div>Select vineyard:</div>
           <DropdownList
@@ -65,7 +69,7 @@ class ControlPanel extends Component {
           <DatePicker
             style={{height:'30px', width:'80px'}}
             selected={ this.state.startDateCurYear }
-            onChange={ value => this.setState({startDateCurYear:value}) }
+            onChange={ value => { this.setState({startDateCurYear:value}) }}
           />
         </div>
         <div>

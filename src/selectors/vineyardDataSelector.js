@@ -7,11 +7,11 @@ const preParam = state => state.preParam;
 // {vineyard, hisYear, curYear, startDateCurYear}
 
 const time_series = (vineyardData, preParam) => {
+
   const data = _.map(vineyardData, (value, key) => {
     return {time:key, temp:_.mean(value)};
   });
 
-  console.log(preParam);
   const year1 = _.chain(data).filter(value => { return value.time.split("-")[0] === preParam.hisYear; }).sortBy('time').value();
   const year2 = _.chain(data).filter(value => { return value.time.split("-")[0] === preParam.curYear; }).sortBy('time').value();
 
