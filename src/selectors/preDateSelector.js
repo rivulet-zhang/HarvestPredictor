@@ -23,31 +23,43 @@ const preDate = (vineyardData, preParam, season) => {
     return null;
 
   console.log(hisSeason);
-  let gdd = 0;
+  let gdd_ver = 0, gdd_har = 0;
   const hisBudbreak = moment(hisSeason['budbreak']).format('YYYY-MM-DD');
+  const hisVeraison = moment(hisSeason['veraison']).format('YYYY-MM-DD');
   const hisHarvest = moment(hisSeason['harvest']).format('YYYY-MM-DD');
   const curBudbreak = preParam.startDateCurYear;
+
+  let curVeraison = null;
   let curHarvest = null;
 
   // calculate GDD summation;
   _.forEach(year1, value => {
+
+    if(value.time >= hisBudbreak && value.time <= hisVeraison)
+      gdd_ver += _.max([value.temp-50, 0]);
+
     if(value.time >= hisBudbreak && value.time <= hisHarvest)
-      gdd += _.max([value.temp-50, 0]);
+      gdd_har += _.max([value.temp-50, 0]);
   });
 
   // predict harvest date;
   _.forEach(year2, value => {
-    if(value.time >= curBudbreak && gdd > 0){
-      gdd -= _.max([value.temp-50, 0]);
-      if(gdd <= 0) curHarvest = value.time;
+    if(value.time >= curBudbreak && gdd_har > 0){
+      gdd_har -= _.max([value.temp-50, 0]);
+      if(gdd_har <= 0) curHarvest = value.time;
+    }
+
+    if(value.time >= curBudbreak && gdd_ver > 0){
+      gdd_ver -= _.max([value.temp-50, 0]);
+      if(gdd_ver <= 0) curVeraison = value.time;
     }
 
   });
 
-  if(!curHarvest)
+  if(!curHarvest || !curVeraison)
     return null;
 
-  return {hisYear:preParam.hisYear, hisBudbreak, hisHarvest, curYear:preParam.curYear, curBudbreak, curHarvest};
+  return {hisYear:preParam.hisYear, hisBudbreak, hisVeraison, hisHarvest, curYear:preParam.curYear, curBudbreak, curVeraison, curHarvest};
 
 };
 
