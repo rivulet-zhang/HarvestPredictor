@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { DropdownList, DateTimePicker } from 'react-widgets';
+import { DropdownList, DateTimePicker, SelectList } from 'react-widgets';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { predict } from '../actions'
@@ -9,6 +9,8 @@ import DatePicker from 'react-datepicker';
 // const VINEYARDS = ['bigRanch', 'tresSabores'];
 const VINEYARDS = ['bigRanch'];
 const YEARS = ["2014", "2015", "2016", "2017"];
+const SEASONS = ['budbreak', 'fruitset', 'veraison'];
+const METHODS = ['GDD-daily', 'GDD-hourly', 'HDD-daily'];
 
 class ControlPanel extends Component {
 
@@ -18,7 +20,8 @@ class ControlPanel extends Component {
       vineyard:null,
       hisYear:null,
       curYear:null,
-      startDateCurYear:null
+      startDateCurYear:null,
+      season:null
     };
 
     this.predictWrapper = this.predictWrapper.bind(this);
@@ -26,10 +29,15 @@ class ControlPanel extends Component {
 
   predictWrapper() {
 
-    if(!this.state.vineyard || !this.state.hisYear || !this.state.curYear || !this.state.startDateCurYear)
+    if(!this.state.vineyard ||
+      !this.state.hisYear ||
+      !this.state.curYear ||
+      !this.state.startDateCurYear ||
+      !this.state.season ||
+      !this.state.method)
       return;
 
-    this.props.predict(this.state.vineyard, this.state.hisYear, this.state.curYear, this.state.startDateCurYear.format('YYYY-MM-DD'));
+    this.props.predict(this.state.vineyard, this.state.hisYear, this.state.curYear, this.state.season, this.state.startDateCurYear.format('YYYY-MM-DD'), this.state.method);
   }
 
   render() {
@@ -42,7 +50,7 @@ class ControlPanel extends Component {
           <DropdownList
             style={{height:'30px', width:'100px'}}
             data={VINEYARDS}
-            onChange={ value => { this.setState({vineyard:value}) } }
+            onChange={ value => this.setState({vineyard:value})}
           />
         </div>
 
@@ -51,7 +59,7 @@ class ControlPanel extends Component {
           <DropdownList
             style={{height:'30px', width:'100px'}}
             data={YEARS}
-            onChange={ value => { this.setState({hisYear:value}) } }
+            onChange={ value => this.setState({hisYear:value})}
           />
         </div>
 
@@ -60,18 +68,34 @@ class ControlPanel extends Component {
           <DropdownList
             style={{height:'30px', width:'100px'}}
             data={YEARS}
-            onChange={ value => { this.setState({curYear:value}) } }
+            onChange={ value => this.setState({curYear:value})}
           />
         </div>
 
         <div>
-          <div>Select start date (bud break) for current year:</div>
+          <div>Select date and season for current year:</div>
           <DatePicker
             style={{height:'30px', width:'80px'}}
             selected={ this.state.startDateCurYear }
-            onChange={ value => { this.setState({startDateCurYear:value}) }}
+            onChange={ value => this.setState({startDateCurYear:value})}
           />
+          <p />
+          <SelectList
+            style={{height:'100px', width:'100px'}}
+            data={SEASONS}
+            onChange={value => this.setState({season:value})}
+            />
         </div>
+
+        <div>
+          <div>Select prediction method:</div>
+          <SelectList
+            style={{height:'100px', width:'200px'}}
+            data={METHODS}
+            onChange={value => this.setState({method:value})}
+            />
+        </div>
+
         <div>
           <button onClick={ this.predictWrapper }>
             Submit

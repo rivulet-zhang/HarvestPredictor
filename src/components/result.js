@@ -10,18 +10,18 @@ class Result extends Component {
 
   render() {
 
+    const rst = this.props.preDate;
+
     return (
       <div>
         <h3>Prediction Result</h3>
         { this.props.preDate &&
           <div>
-          <div>Budbreak in {this.props.preDate.hisYear} is {this.props.preDate.hisBudbreak}</div>
-          <div>Veraison in {this.props.preDate.hisYear} is {this.props.preDate.hisVeraison}</div>
-          <div>Harvest in {this.props.preDate.hisYear} is {this.props.preDate.hisHarvest}</div>
+          <div>The {rst.startSeason} date in {rst.hisYear} is {rst.hisStart}</div>
+          <div>The harvest date in {rst.hisYear} is {rst.hisEnd}</div>
           <br />
-          <div>Budbreak in {this.props.preDate.curYear} is {this.props.preDate.curBudbreak}</div>
-          <div>Veraison in {this.props.preDate.curYear} is {this.props.preDate.curVeraison}</div>
-          <div>Harvest in {this.props.preDate.curYear} is <span color={'#f00'}>{this.props.preDate.curHarvest}</span></div>
+          <div>The {rst.startSeason} date in {rst.curYear} is {rst.curStart}</div>
+          <div>The harvest date in {rst.curYear} is <span color={'#f00'}>{rst.curEnd}</span></div>
           </div>
         }
       </div>

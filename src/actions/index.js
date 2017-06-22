@@ -1,9 +1,8 @@
 import { csv as requestCsv } from 'd3-request';
 
-const PREDICTION_URL = `http://voxel.ecn.purdue.edu/weathertrends/temp_summary.csv`;
-
 // hardcoded value for now
 const vineyard = 'bigRanch';
+const PREDICTION_URL = `http://voxel.ecn.purdue.edu/weathertrends/temp_summary_${vineyard}.csv`;
 
 export function loadInitialData() {
 
@@ -29,6 +28,6 @@ export function loadInitialData() {
 }
 
 
-export function predict(vineyard, hisYear, curYear, startDateCurYear) {
-  return {type:'PREDICT', payload:{vineyard, hisYear, curYear, startDateCurYear}};
+export function predict(vineyard, hisYear, curYear, season, startDateCurYear, method) {
+  return {type:'PREDICT', payload:{vineyard, hisYear, curYear, season, startDateCurYear, method}};
 }
