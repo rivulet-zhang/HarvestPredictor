@@ -13,7 +13,13 @@ const preDate = (vineyardData, preParam, season) => {
   // for historical years, such as 2016 and previous, we have hourly based data -> for each day len = 96
   // for current year (2017), we only have daily based data -> for each day len = 3 (max, min. avg)
   const data = _.map(vineyardData, (value, key) => {
-    return {time:key, temp:value, daily:[_.max(value), _.min(value), _.mean(value)]};
+    if (value.length === 3) {
+      // which is wt360 data
+      return {time:key, hourly:[_.max(value), _.min(value)], daily:[_.max(value), _.min(value), _.mean(value)]};
+    } else {
+      // picovale data
+      return {time:key, hourly:value, daily:[_.max(value), _.min(value), _.mean(value)]};
+    }
   });
 
   // filter and sort two years' data
@@ -39,15 +45,14 @@ const preDate = (vineyardData, preParam, season) => {
   _.forEach(year1, value => {
 
     if(value.time >= hisStart && value.time <= hisEnd)
-      gdd_har += getQuantityPerDay(preParam.method)(value);
+      gdd_har += getQuantityPerDay(preParam.method, preParam.option)(value);
   });
 
   // note that for current year, we do not have hourly data
-  const methodHere = preParam.method == 'GDD-hourly' ? 'GDD-daily' : preParam.method;
   // predict harvest date;
   _.forEach(year2, value => {
     if(value.time >= curStart && gdd_har > 0){
-      gdd_har -= getQuantityPerDay(methodHere)(value);
+      gdd_har -= getQuantityPerDay(preParam.method, preParam.option)(value);
       if(gdd_har <= 0) curEnd = value.time;
     }
   });
@@ -55,7 +60,7 @@ const preDate = (vineyardData, preParam, season) => {
   if(!curEnd)
     return null;
 
-  return {hisYear:preParam.hisYear, hisStart, hisEnd, curYear:preParam.curYear, curStart, curEnd, startSeason:preParam.season};
+  return {hisYear:preParam.hisYear, hisStart, hisEnd, curYear:preParam.curYear, curStart, curEnd, startSeason:preParam.season, model:preParam.method};
 
 };
 
@@ -67,19 +72,34 @@ export default createSelector(
 );
 
 // this value will return the quantity (either gdd or hdd) of one day based on the method
-function getQuantityPerDay(method) {
-  // input to the returning function is an object of {time, temp, daily}
-  if (method == 'GDD-daily')
-    return x => _.max([x.daily[2]-50, 0]);
-  if (method == 'HDD-daily')
-    return x => _.max([(x.daily[2]-50+x.daily[0]-50)*0.5, 0]);
+function getQuantityPerDay(method, option) {
+  // input to the returning function is an object of {time, hourly, daily}
+  if (method == 'GDD-daily') {
+    return x => {
+      const max = option == 'upperlimit-95' ? _.min([x.daily[0], 95]) : x.daily[0];
+      const min = x.daily[1];
+      const avg = (max+min)/2.0;
+      return _.max([avg-50, 0]);
+    };
+  }
+
+  if (method == 'HDD-daily') {
+    return x => {
+      const max = option == 'upperlimit-95' ? _.min([x.daily[0], 95]) : x.daily[0];
+      const min = x.daily[1];
+      const avg = (max+min)/2.0;
+      return _.max([(avg-50+max-50)/2.0, 0]);
+    }
+  }
+
   if (method == 'GDD-hourly')
     return x => {
       let cummulated = 0;
-      for(let i=0; i<x.temp.length; i++) {
-        cummulated += _.max([x.temp[i]-50, 0]);
+      for(let i=0; i<x.hourly.length; i++) {
+        const tmp = option == 'upperlimit-95' ? _.min([x.hourly[i], 95]) : x.hourly[i];
+        cummulated += _.max([tmp-50, 0]);
       }
-      return cummulated / x.temp.length;
+      return cummulated / x.hourly.length;
     };
 
   throw new ERROR("ERROR calculating GDD");

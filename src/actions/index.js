@@ -28,6 +28,6 @@ export function loadInitialData() {
 }
 
 
-export function predict(vineyard, hisYear, curYear, season, startDateCurYear, method) {
-  return {type:'PREDICT', payload:{vineyard, hisYear, curYear, season, startDateCurYear, method}};
+export function predict(vineyard, hisYear, curYear, season, startDateCurYear, method, option) {
+  return {type:'PREDICT', payload:{vineyard, hisYear, curYear, season, startDateCurYear, method, option}};
 }
