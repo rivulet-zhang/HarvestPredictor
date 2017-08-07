@@ -10,7 +10,8 @@ import DatePicker from 'react-datepicker';
 const VINEYARDS = ['bigRanch'];
 const YEARS = ["2014", "2015", "2016", "2017"];
 const SEASONS = ['budbreak', 'fruitset', 'April-1', 'veraison'];
-const METHODS = ['GDD-daily', 'GDD-hourly', 'HDD-daily'];
+// const METHODS = ['GDD-daily', 'GDD-hourly', 'HDD-daily'];
+const METHODS = ['GDD-hourly'];
 const OPTIONS = ['default', 'upperlimit-95'];
 
 class ControlPanel extends Component {
@@ -45,17 +46,15 @@ class ControlPanel extends Component {
   }
 
   predictWrapperBatch() {
-
-    const seasonInfo = {'2017':{'budbreak': '2017-04-04', 'fruitset': '2017-05-02', 'April-1': '2017-04-01'}};
+    const seasonInfo = {'2017':{'budbreak': '2017-04-04', 'fruitset': '2017-05-02', 'April-1': '2017-04-01', 'veraison': '2017-08-04'}};
     const vineyard = 'bigRanch';
-    const option = 'upperlimit-95';
-    // const option = 'default';
+    // const option = 'upperlimit-95';
+    const option = 'default';
 
     let i = 0;
     for(const year of YEARS) {
       if(year == '2017') continue;
       for(const season of SEASONS) {
-        if(season == 'veraison') continue;
         for(const method of METHODS) {
             setTimeout(() => {
               this.props.predict(vineyard, year, '2017', season, seasonInfo['2017'][season], method, option);

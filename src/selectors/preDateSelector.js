@@ -1,11 +1,14 @@
 import { createSelector } from 'reselect';
 import moment from 'moment';
 import _ from 'lodash';
+import {scaleLinear} from 'd3-scale';
 
 const vineyardData = state => state.vineyardData;
 const preParam = state => state.preParam;
 const season = state => state.season;
 // {vineyard, hisYear, curYear, startDateCurYear}
+let year1 = [], year2 = [];
+let hisStart, hisEnd, curStart;
 
 const preDate = (vineyardData, preParam, season) => {
 
@@ -23,8 +26,8 @@ const preDate = (vineyardData, preParam, season) => {
   });
 
   // filter and sort two years' data
-  const year1 = _.chain(data).filter(value => { return value.time.split("-")[0] === preParam.hisYear; }).sortBy('time').value();
-  const year2 = _.chain(data).filter(value => { return value.time.split("-")[0] === preParam.curYear; }).sortBy('time').value();
+  year1 = _.chain(data).filter(value => { return value.time.split("-")[0] === preParam.hisYear; }).sortBy('time').value();
+  year2 = _.chain(data).filter(value => { return value.time.split("-")[0] === preParam.curYear; }).sortBy('time').value();
 
   // get season information for two years
   let hisSeason = _.filter(season, value => { return value.vineyard === preParam.vineyard && value.year === preParam.hisYear; });
@@ -33,9 +36,9 @@ const preDate = (vineyardData, preParam, season) => {
   if(!_.has(hisSeason, preParam.season) || !_.has(hisSeason, 'harvest') /* || !_.has(curSeason, 'budbreak') */ )
     return null;
 
-  const hisStart = moment(hisSeason[preParam.season]).format('YYYY-MM-DD');
-  const hisEnd = moment(hisSeason['harvest']).format('YYYY-MM-DD');
-  const curStart = preParam.startDateCurYear;
+  hisStart = moment(hisSeason[preParam.season]).format('YYYY-MM-DD');
+  hisEnd = moment(hisSeason['harvest']).format('YYYY-MM-DD');
+  curStart = preParam.startDateCurYear;
 
   // start calculation
   let gdd_har = 0;
@@ -71,6 +74,15 @@ export default createSelector(
   preDate
 );
 
+function getDataOneDay(yearData, date) {
+  for(const year of yearData) {
+    if (year.time == date) {
+      return year;
+    }
+  }
+  return null;
+}
+
 // this value will return the quantity (either gdd or hdd) of one day based on the method
 function getQuantityPerDay(method, option) {
   // input to the returning function is an object of {time, hourly, daily}
@@ -79,7 +91,8 @@ function getQuantityPerDay(method, option) {
       const max = option == 'upperlimit-95' ? _.min([x.daily[0], 95]) : x.daily[0];
       const min = x.daily[1];
       const avg = (max+min)/2.0;
-      return _.max([avg-50, 0]);
+      const val = _.max([avg-50, 0]);
+      return val;
     };
   }
 
@@ -94,12 +107,43 @@ function getQuantityPerDay(method, option) {
 
   if (method == 'GDD-hourly')
     return x => {
-      let cummulated = 0;
-      for(let i=0; i<x.hourly.length; i++) {
-        const tmp = option == 'upperlimit-95' ? _.min([x.hourly[i], 95]) : x.hourly[i];
-        cummulated += _.max([tmp-50, 0]);
+      const flag = x.hourly.length == 2 && getDataOneDay(year1, `${hisStart.substring(0, 4)}${x.time.substring(4)}`) != null;
+      // GDD hourly data is available (historical data)
+      if (!flag) {
+        let cummulated = 0;
+        for(let i=0; i<x.hourly.length; i++) {
+          const tmp = option == 'upperlimit-95' ? _.min([x.hourly[i], 95]) : x.hourly[i];
+          cummulated += _.max([tmp-50, 0]);
+        }
+        const val = cummulated / x.hourly.length;
+        return val;
       }
-      return cummulated / x.hourly.length;
+      // GDD hourly data is not available, try to model the hourly data based on previous year
+      else {
+        const hisData = getDataOneDay(year1, `${hisStart.substring(0, 4)}${x.time.substring(4)}`);
+        const hourly = hisData.hourly;
+        const minmax = [_.min(hourly), _.max(hourly)];
+        const mapping = scaleLinear()
+          .domain([minmax[0], minmax[1]])
+          .range([x.hourly[1], x.hourly[0]]);
+
+        let cummulated = 0;
+        hourly.forEach(val => {
+          const mapped = mapping(val);
+          const tmp = option == 'upperlimit-95' ? _.min([mapped, 95]) : mapped;
+          cummulated += _.max([tmp-50, 0]);
+        });
+        const val = cummulated / hourly.length;
+        // // for comparison only
+        // let accm_new = 0;
+        // let tmp = option == 'upperlimit-95' ? _.min([x.hourly[0], 95]) : x.hourly[0];
+        // accm_new += _.max([tmp-50, 0]);
+        // tmp = option == 'upperlimit-95' ? _.min([x.hourly[1], 95]) : x.hourly[1];
+        // accm_new += _.max([tmp-50, 0]);
+        //
+        // console.log('compare', val, accm_new / 2);
+        return val;
+      }
     };
 
   throw new ERROR("ERROR calculating GDD");
